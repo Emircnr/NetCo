@@ -118,6 +118,7 @@
       margin-bottom: 10px;
       font-weight: 600;
       letter-spacing: 1px;
+      text-align: center;
     }
 
     .controls {
@@ -157,6 +158,12 @@
       transform: scale(1.05);
     }
 
+    /* Tablo sarmalayıcı (responsive için) */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
+
     /* Tablo Stili */
     table {
       width: 100%;
@@ -178,6 +185,7 @@
       text-align: left;
       vertical-align: middle;
       transition: background var(--transition-speed), color var(--transition-speed);
+      min-width: 120px; /* Dar ekranlarda sütunların çok sıkışmasını engeller */
     }
 
     table tr:last-child td {
@@ -337,10 +345,20 @@
     /****************************************
      *            Responsive CSS            *
      ****************************************/
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+
     @media (max-width: 600px) {
       .container {
         padding: 15px;
         margin: 15px auto;
+      }
+      header h1 {
+        font-size: 1.2rem;
       }
       .controls button,
       .controls input,
@@ -361,7 +379,6 @@
         font-size: 14px;
       }
     }
-
   </style>
 </head>
 <body class="light-theme">
@@ -382,24 +399,26 @@
           <button id="logoutBtn">Çıkış Yap</button>
         </div>
       </header>
-      <table id="contactsTable">
-        <thead>
-          <tr>
-            <th>İsim Soyisim</th>
-            <th>Meslek</th>
-            <th>İletişim</th>
-            <th>Görüşme Konusu</th>
-            <th>Puan</th>
-            <th>Kategoriler</th>
-            <th>Not</th>
-            <th>Randevu Tarihi</th>
-            <th>İşlemler</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Kayıtlar Firestore'dan yüklenecek -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="contactsTable">
+          <thead>
+            <tr>
+              <th>İsim Soyisim</th>
+              <th>Meslek</th>
+              <th>İletişim</th>
+              <th>Görüşme Konusu</th>
+              <th>Puan</th>
+              <th>Kategoriler</th>
+              <th>Not</th>
+              <th>Randevu Tarihi</th>
+              <th>İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Kayıtlar Firestore'dan yüklenecek -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Proje Yönetimi -->
@@ -410,19 +429,21 @@
           <button id="createProjectBtn">Proje Oluştur</button>
         </div>
       </header>
-      <table id="projectsTable">
-        <thead>
-          <tr>
-            <th>Proje Adı</th>
-            <th>Oluşturma Tarihi</th>
-            <th>Üyeler</th>
-            <th>İşlemler</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Projeler Firestore'dan yüklenecek -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="projectsTable">
+          <thead>
+            <tr>
+              <th>Proje Adı</th>
+              <th>Oluşturma Tarihi</th>
+              <th>Üyeler</th>
+              <th>İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Projeler Firestore'dan yüklenecek -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Görev Yönetimi -->
@@ -433,22 +454,24 @@
           <button id="createTaskBtn">Görev Ekle</button>
         </div>
       </header>
-      <table id="tasksTable">
-        <thead>
-          <tr>
-            <th>Görev Başlığı</th>
-            <th>Proje</th>
-            <th>Görev Verilen Kişi</th>
-            <th>Ünvan</th>
-            <th>Son Tarih</th>
-            <th>Durum</th>
-            <th>İşlemler</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Görevler Firestore'dan yüklenecek -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="tasksTable">
+          <thead>
+            <tr>
+              <th>Görev Başlığı</th>
+              <th>Proje</th>
+              <th>Görev Verilen Kişi</th>
+              <th>Ünvan</th>
+              <th>Son Tarih</th>
+              <th>Durum</th>
+              <th>İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Görevler Firestore'dan yüklenecek -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -665,8 +688,9 @@
 
     let fetchedTasks = [];     // Görevler
 
-    // Görev yakınlaşma eşiği (ör. 3 gün)
+    // Görev yakınlaşma eşiği (gün)
     const DUE_SOON_DAYS = 3;
+    // Not içeriğini tabloda kısaltmak için
     const NOTE_TRUNCATE_LENGTH = 50;
 
     /********************************
@@ -914,6 +938,7 @@
     }
 
     contactsTableBody.addEventListener('click', function(e) {
+      // Not hücresine tıklanırsa
       if (e.target.classList.contains('note-cell')) {
         const fullText = e.target.getAttribute('data-full');
         fullNoteContent.textContent = fullText;
@@ -967,6 +992,7 @@
     });
 
     contactsTableBody.addEventListener('click', async function(e) {
+      // Kayıt düzenleme
       if (e.target.classList.contains('edit-btn')) {
         const id = e.target.getAttribute('data-id');
         const contact = fetchedContacts.find(c => c.id === id);
@@ -988,6 +1014,7 @@
           openModal(contactModal);
         }
       }
+      // Kayıt silme
       if (e.target.classList.contains('delete-btn')) {
         const id = e.target.getAttribute('data-id');
         if (confirm("Bu kaydı silmek istediğinize emin misiniz?")) {
@@ -1009,6 +1036,7 @@
       Array.from(rows).forEach(row => {
         const cells = row.getElementsByTagName('td');
         let match = false;
+        // İlk 4 sütunda (isim, meslek, iletişim, konu) arama
         for (let i = 0; i < 4; i++) {
           if (cells[i] && cells[i].textContent.toLowerCase().indexOf(queryStr) > -1) {
             match = true;
